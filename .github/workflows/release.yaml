@@ -40,7 +40,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   ko-build:
-    name: Release apko image
+    name: Release apko image and Tekton Task
     runs-on: ubuntu-latest
 
     # https://docs.github.com/en/actions/reference/authentication-in-a-workflow
@@ -62,6 +62,9 @@ jobs:
         version: v0.11.1
     - uses: sigstore/cosign-installer@581838fbedd492d2350a9ecd427a95d6de1e5d01 # v2.0.1
     - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v2.4.0
+    - name: Login to registry
+      run: |
+        echo ${{ github.token }} | go run ./ login ghcr.io --username=${{ github.repository_owner }} --password-stdin
     - name: Publish/Sign apko image
       run: |
         # If not a tagged release, override image tag to "canary"
