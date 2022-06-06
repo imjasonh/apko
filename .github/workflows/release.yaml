@@ -7,7 +7,8 @@ on:
     - main
     tags:
     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-  release: [created]
+  release:
+    types: [created]
 
 env:
   GO_VERSION: 1.18
