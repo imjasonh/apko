@@ -122,4 +122,7 @@ jobs:
     - name: Attach to release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: gh release upload ${GITHUB_REF#refs/tags/} task.yaml
+      run: |
+        echo GITHUB_REF is ${GITHUB_REF}
+        echo release is ${GITHUB_REF#refs/tags/}
+        gh release upload ${GITHUB_REF#refs/tags/} task.yaml
