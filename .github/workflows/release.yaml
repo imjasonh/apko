@@ -7,8 +7,6 @@ on:
     - main
     tags:
     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-  release:
-    types: [created]
 
 env:
   GO_VERSION: 1.18
@@ -85,8 +83,10 @@ jobs:
         make sign-image
 
   tekton-task:
-    # Only release CLI for tagged releases
-    if: startsWith(github.event.ref, 'refs/tags/v')
+    # Only release the Tekton Task after a CLI release has been created, since
+    # goreleaser creates a GitHub Release which the Tekton Task will be
+    # attached to.
+    needs: cli
 
     name: Release the Tekton Task
     runs-on: ubuntu-latest
@@ -115,9 +115,6 @@ jobs:
 
     - name: Generate Tekton Task
       run: |
-        echo GITHUB_REF is ${GITHUB_REF}
-        echo event type is ${{ github.event.type }}
-
         # If not a tagged release, override image tag to "canary"
         if [[ $GITHUB_REF != refs/tags/* ]]; then
           export GIT_VERSION=canary
@@ -125,10 +122,8 @@ jobs:
         make ko-resolve
 
     - name: Attach to release
-      if: github.event.type == 'created'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo GITHUB_REF is ${GITHUB_REF}
-        echo release name is ${{ github.event.release.name }}
-        gh release upload ${{ github.event.release.name }} task.yaml
+        gh release upload ${GITHUB_REF#refs/tags/} task.yaml
