@@ -93,10 +93,6 @@ func (s *SubFS) Readlink(name string) (string, error) {
 	return s.FS.Readlink(fullPath)
 }
 
-func (s *SubFS) Mknod(path string, mode uint32, dev int) error {
-	fullPath := filepath.Join(s.Root, path)
-	return s.FS.Mknod(fullPath, mode, dev)
-}
 func (s *SubFS) Readnod(path string) (int, error) {
 	fullPath := filepath.Join(s.Root, path)
 	return s.FS.Readnod(fullPath)

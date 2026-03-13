@@ -64,7 +64,7 @@ var (
 
 func TestInitDB(t *testing.T) {
 	src := apkfs.NewMemFS()
-	apk, err := New(t.Context(), WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+	apk, err := New(t.Context(), WithFS(src))
 	require.NoError(t, err)
 	err = apk.InitDB(context.Background())
 	require.NoError(t, err)
@@ -89,16 +89,6 @@ func TestInitDB(t *testing.T) {
 		require.Equal(t, f.perms, fi.Mode().Perm(), "mismatched permissions for %s", f.path)
 		require.GreaterOrEqual(t, fi.Size(), int64(len(f.contents)), "mismatched size for %s", f.path) // actual file can be bigger than original size
 	}
-	if !ignoreMknodErrors {
-		for _, f := range initDeviceFiles {
-			fi, err := fs.Stat(src, f.path)
-			require.NoError(t, err, "error statting %s", f.path)
-			require.Equal(t, fi.Mode().Type()&os.ModeCharDevice, os.ModeCharDevice, "expected %s to be a character file, got %v", f.path, fi.Mode())
-			targetPerms := f.perms
-			actualPerms := fi.Mode().Perm()
-			require.Equal(t, targetPerms, actualPerms, "expected %s to have permissions %v, got %v", f.path, targetPerms, actualPerms)
-		}
-	}
 
 	ent, err := fs.ReadDir(src, "etc/apk/keys")
 	require.NoError(t, err)
@@ -107,7 +97,7 @@ func TestInitDB(t *testing.T) {
 
 func TestInitDB_ChainguardDiscovery(t *testing.T) {
 	src := apkfs.NewMemFS()
-	apk, err := New(t.Context(), WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+	apk, err := New(t.Context(), WithFS(src))
 	require.NoError(t, err)
 
 	err = apk.InitDB(context.Background(), "https://apk.cgr.dev/chainguard")
@@ -126,16 +116,6 @@ func TestInitDB_ChainguardDiscovery(t *testing.T) {
 		require.Equal(t, f.perms, fi.Mode().Perm(), "mismatched permissions for %s", f.path)
 		require.GreaterOrEqual(t, fi.Size(), int64(len(f.contents)), "mismatched size for %s", f.path) // actual file can be bigger than original size
 	}
-	if !ignoreMknodErrors {
-		for _, f := range initDeviceFiles {
-			fi, err := fs.Stat(src, f.path)
-			require.NoError(t, err, "error statting %s", f.path)
-			require.Equal(t, fi.Mode().Type()&os.ModeCharDevice, os.ModeCharDevice, "expected %s to be a character file, got %v", f.path, fi.Mode())
-			targetPerms := f.perms
-			actualPerms := fi.Mode().Perm()
-			require.Equal(t, targetPerms, actualPerms, "expected %s to have permissions %v, got %v", f.path, targetPerms, actualPerms)
-		}
-	}
 
 	// Confirm that we find at least one discovered key.
 	ent, err := fs.ReadDir(src, "etc/apk/keys")
@@ -148,7 +128,7 @@ func TestResolveApkDB(t *testing.T) {
 
 	t.Run("no lib", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -167,7 +147,7 @@ func TestResolveApkDB(t *testing.T) {
 
 	t.Run("existing lib", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -190,7 +170,7 @@ func TestResolveApkDB(t *testing.T) {
 
 	t.Run("existing lib apk", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -213,7 +193,7 @@ func TestResolveApkDB(t *testing.T) {
 
 	t.Run("existing lib apk dirs", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -236,7 +216,7 @@ func TestResolveApkDB(t *testing.T) {
 
 	t.Run("existing lib apk dir files", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -255,7 +235,7 @@ func TestResolveApkDB(t *testing.T) {
 
 	t.Run("linked lib", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -278,7 +258,7 @@ func TestResolveApkDB(t *testing.T) {
 
 	t.Run("linked lib apk", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -313,7 +293,7 @@ func TestHasUsrMergeBaseImage(t *testing.T) {
 
 	t.Run("no packages installed", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -324,7 +304,7 @@ func TestHasUsrMergeBaseImage(t *testing.T) {
 
 	t.Run("packages without merged-lib", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -345,7 +325,7 @@ func TestHasUsrMergeBaseImage(t *testing.T) {
 
 	t.Run("package with merged-lib", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -366,7 +346,7 @@ func TestHasUsrMergeBaseImage(t *testing.T) {
 
 	t.Run("multiple packages with one providing merged-lib", func(t *testing.T) {
 		src := apkfs.NewMemFS()
-		apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		apk, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 		err = apk.InitDB(ctx)
 		require.NoError(t, err)
@@ -407,7 +387,7 @@ func TestHasUsrMergeBaseImage(t *testing.T) {
 func TestSetWorld(t *testing.T) {
 	ctx := context.Background()
 	src := apkfs.NewMemFS()
-	apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+	apk, err := New(ctx, WithFS(src))
 	require.NoError(t, err)
 	// for initialization
 	err = src.MkdirAll("etc/apk", 0o755)
@@ -430,7 +410,7 @@ func TestSetWorld(t *testing.T) {
 func TestSetWorldWithVersions(t *testing.T) {
 	ctx := context.Background()
 	src := apkfs.NewMemFS()
-	apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+	apk, err := New(ctx, WithFS(src))
 	require.NoError(t, err)
 	// for initialization
 	err = src.MkdirAll("etc/apk", 0o755)
@@ -453,7 +433,7 @@ func TestSetWorldWithVersions(t *testing.T) {
 func TestSetRepositories(t *testing.T) {
 	ctx := context.Background()
 	src := apkfs.NewMemFS()
-	apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+	apk, err := New(ctx, WithFS(src))
 	require.NoError(t, err)
 	// for initialization
 
@@ -475,7 +455,7 @@ func TestSetRepositories(t *testing.T) {
 func TestSetRepositories_Empty(t *testing.T) {
 	ctx := context.Background()
 	src := apkfs.NewMemFS()
-	apk, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+	apk, err := New(ctx, WithFS(src))
 	require.NoError(t, err)
 	// for initialization
 
@@ -490,7 +470,7 @@ func TestSetRepositories_Empty(t *testing.T) {
 func TestInitKeyring(t *testing.T) {
 	src := apkfs.NewMemFS()
 	tr := &testLocalTransport{root: testPrimaryPkgDir, basenameOnly: true}
-	a, err := New(t.Context(), WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors), WithTransport(tr))
+	a, err := New(t.Context(), WithFS(src), WithTransport(tr))
 	require.NoError(t, err)
 
 	dir, err := os.MkdirTemp("", "go-apk")
@@ -583,7 +563,7 @@ func TestLoadSystemKeyring(t *testing.T) {
 	t.Run("non-existent dir", func(t *testing.T) {
 		ctx := context.Background()
 		src := apkfs.NewMemFS()
-		a, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		a, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 
 		// Read the empty dir, passing a non-existent location should err
@@ -593,7 +573,7 @@ func TestLoadSystemKeyring(t *testing.T) {
 	t.Run("empty dir", func(t *testing.T) {
 		ctx := context.Background()
 		src := apkfs.NewMemFS()
-		a, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+		a, err := New(ctx, WithFS(src))
 		require.NoError(t, err)
 
 		// Read the empty dir, passing only one empty location should err
@@ -615,7 +595,7 @@ func TestLoadSystemKeyring(t *testing.T) {
 			ctx := context.Background()
 			arch := ArchToAPK(runtime.GOARCH)
 			src := apkfs.NewMemFS()
-			a, err := New(ctx, WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+			a, err := New(ctx, WithFS(src))
 			require.NoError(t, err)
 
 			// Write some dummy keyfiles in a random location
@@ -675,7 +655,7 @@ func TestFetchPackage_original(t *testing.T) {
 		err := src.MkdirAll("usr/lib/apk/db", 0o755)
 		require.NoError(t, err, "unable to mkdir /usr/lib/apk/db")
 
-		opts := []Option{WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors), WithTransport(tr)}
+		opts := []Option{WithFS(src), WithTransport(tr)}
 		if cache != "" {
 			opts = append(opts, WithCache(cache, false, NewCache(false)))
 		}

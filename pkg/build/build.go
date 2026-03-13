@@ -277,7 +277,6 @@ func New(ctx context.Context, fs apkfs.FullFS, opts ...Option) (*Context, error)
 	apkOpts := []apk.Option{
 		apk.WithFS(bc.fs),
 		apk.WithArch(bc.o.Arch.ToAPK()),
-		apk.WithIgnoreMknodErrors(true),
 		apk.WithIgnoreIndexSignatures(bc.o.IgnoreSignatures),
 		apk.WithAuthenticator(bc.o.Auth),
 		apk.WithTransport(bc.o.Transport),

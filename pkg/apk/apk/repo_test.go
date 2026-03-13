@@ -113,7 +113,7 @@ func TestGetRepositoryIndexes(t *testing.T) {
 			require.NoErrorf(t, err, "unable to write repositories")
 		}
 
-		opts := []Option{WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors), WithTransport(tr)}
+		opts := []Option{WithFS(src), WithTransport(tr)}
 		if cache != "" {
 			opts = append(opts, WithCache(cache, false, NewCache(false)))
 		}

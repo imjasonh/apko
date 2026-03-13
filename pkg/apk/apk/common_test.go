@@ -99,7 +99,7 @@ func testGetTestAPK() (*APK, apkfs.FullFS, error) {
 	}); walkErr != nil {
 		return nil, nil, walkErr
 	}
-	apk, err := New(context.Background(), WithFS(src), WithIgnoreMknodErrors(ignoreMknodErrors))
+	apk, err := New(context.Background(), WithFS(src))
 	if err != nil {
 		return nil, nil, err
 	}

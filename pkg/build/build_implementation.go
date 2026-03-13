@@ -212,11 +212,6 @@ func (bc *Context) buildImage(ctx context.Context) ([]apk.InstalledDiff, error) 
 		return nil, err
 	}
 
-	// add necessary character devices
-	if err := installCharDevices(bc.fs); err != nil {
-		return nil, err
-	}
-
 	if err := updateCache(ctx, bc.fs); err != nil {
 		return nil, err
 	}

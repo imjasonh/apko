@@ -40,7 +40,6 @@ type FullFS interface {
 	Mkdir(path string, perm fs.FileMode) error
 	MkdirAll(path string, perm fs.FileMode) error
 	WriteFile(name string, b []byte, mode fs.FileMode) error
-	Mknod(path string, mode uint32, dev int) error
 	Symlink(oldname, newname string) error
 	Link(oldname, newname string) error
 	Create(name string) (File, error)

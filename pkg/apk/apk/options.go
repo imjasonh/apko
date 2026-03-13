@@ -29,7 +29,6 @@ import (
 type opts struct {
 	executor           Executor
 	arch               string
-	ignoreMknodErrors  bool
 	fs                 apkfs.FullFS
 	version            string
 	cache              *cache
@@ -72,14 +71,6 @@ func WithArch(arch string) Option {
 func WithVersion(version string) Option {
 	return func(o *opts) error {
 		o.version = version
-		return nil
-	}
-}
-
-// WithIgnoreMknodErrors sets whether to ignore errors when creating device nodes. Default is false.
-func WithIgnoreMknodErrors(ignore bool) Option {
-	return func(o *opts) error {
-		o.ignoreMknodErrors = ignore
 		return nil
 	}
 }
@@ -173,9 +164,8 @@ func WithSizeLimits(limits *SizeLimits) Option {
 
 func defaultOpts() *opts {
 	return &opts{
-		arch:              ArchToAPK(runtime.GOARCH),
-		ignoreMknodErrors: false,
-		auth:              auth.DefaultAuthenticators,
-		transport:         cleanhttp.DefaultPooledTransport(),
+		arch:      ArchToAPK(runtime.GOARCH),
+		auth:      auth.DefaultAuthenticators,
+		transport: cleanhttp.DefaultPooledTransport(),
 	}
 }

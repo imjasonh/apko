@@ -579,31 +579,6 @@ func (m *memFS) OpenReaderAt(name string) (apkfs.File, error) {
 	return m.OpenFile(name, os.O_RDONLY, 0o644)
 }
 
-func (m *memFS) Mknod(path string, mode uint32, dev int) error {
-	parent := filepath.Dir(path)
-	base := filepath.Base(path)
-	anode, err := m.getNode(parent)
-	if err != nil {
-		return err
-	}
-	anode.mu.Lock()
-	defer anode.mu.Unlock()
-	if _, ok := anode.children[base]; ok {
-		return fs.ErrExist
-	}
-	anode.children[base] = &node{
-		name:      base,
-		mode:      fs.FileMode(mode) | os.ModeCharDevice | os.ModeDevice,
-		major:     unix.Major(uint64(dev)),
-		minor:     unix.Minor(uint64(dev)),
-		xattrs:    map[string][]byte{},
-		hardlinks: map[string]*tar.Header{},
-		modTime:   anode.modTime,
-	}
-
-	return nil
-}
-
 func (m *memFS) Readnod(path string) (dev int, err error) {
 	parent := filepath.Dir(path)
 	base := filepath.Base(path)

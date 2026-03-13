@@ -23,11 +23,9 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/chainguard-dev/clog"
-	"golang.org/x/sys/unix"
 )
 
 type dirFSOpts struct {
@@ -160,19 +158,7 @@ func DirFS(ctx context.Context, dir string, opts ...DirFSOption) FullFS {
 				err = f.overrides.Symlink(target, path)
 			}
 		case fs.ModeCharDevice:
-			var dev int
-			sys := fi.Sys()
-			st1, ok1 := sys.(*syscall.Stat_t)
-			st2, ok2 := sys.(*unix.Stat_t)
-			switch {
-			case ok1:
-				dev = int(st1.Rdev)
-			case ok2:
-				dev = int(st2.Rdev)
-			default:
-				return fmt.Errorf("unsupported type %T", sys)
-			}
-			err = f.overrides.Mknod(path, uint32(unix.S_IFCHR|mode), dev)
+			log.Debug("Skipping char device...")
 		default:
 			var memFile File
 			memFile, err = f.overrides.OpenFile(path, os.O_CREATE, perm)
@@ -587,26 +573,6 @@ func (f *dirFS) Chtimes(path string, atime time.Time, mtime time.Time) error {
 		return fmt.Errorf("unable to change times: %w", err)
 	}
 	return f.overrides.Chtimes(path, atime, mtime)
-}
-
-func (f *dirFS) Mknod(name string, mode uint32, dev int) error {
-	if f.caseSensitiveOnDisk(name) {
-		fullpath, err := f.sanitizePath(name)
-		if err != nil {
-			return err
-		}
-		// what if we could not create it? Just create a regular file there, and memory will override
-		if err := unix.Mknod(fullpath, mode, dev); err != nil {
-			fullpath, err = f.sanitizePath(name)
-			if err != nil {
-				return err
-			}
-			if err := os.WriteFile(fullpath, nil, 0); err != nil {
-				return err
-			}
-		}
-	}
-	return f.overrides.Mknod(name, mode, dev)
 }
 
 func (f *dirFS) SetXattr(path string, attr string, data []byte) error {

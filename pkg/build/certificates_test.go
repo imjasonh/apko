@@ -541,7 +541,7 @@ func TestInstallCertificates(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			fsys := apkfs.NewMemFS()
 
-			apkInst, err := apk.New(context.Background(), apk.WithFS(fsys), apk.WithIgnoreMknodErrors(true))
+			apkInst, err := apk.New(context.Background(), apk.WithFS(fsys))
 			if err != nil {
 				t.Fatalf("failed to create APK: %v", err)
 			}

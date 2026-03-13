@@ -44,7 +44,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.step.sm/crypto/jose"
 	"golang.org/x/sync/errgroup"
-	"golang.org/x/sys/unix"
 
 	"chainguard.dev/apko/pkg/apk/auth"
 	"chainguard.dev/apko/pkg/apk/expandapk"
@@ -63,7 +62,6 @@ type APK struct {
 	version            string
 	fs                 apkfs.FullFS
 	executor           Executor
-	ignoreMknodErrors  bool
 	client             *http.Client
 	cache              *cache
 	ignoreSignatures   bool
@@ -135,7 +133,6 @@ func New(ctx context.Context, options ...Option) (*APK, error) {
 		fs:                 opt.fs,
 		arch:               opt.arch,
 		executor:           opt.executor,
-		ignoreMknodErrors:  opt.ignoreMknodErrors,
 		version:            opt.version,
 		cache:              opt.cache,
 		ignoreSignatures:   opt.ignoreSignatures,
@@ -205,15 +202,6 @@ var initFiles = []file{
 	{"/usr/lib/apk/db/installed", 0o644, nil},
 }
 
-// deviceFiles is a list of files to create relative to the root.
-var initDeviceFiles = []deviceFile{
-	{"/dev/zero", 1, 5, 0o666},
-	{"/dev/urandom", 1, 9, 0o666},
-	{"/dev/null", 1, 3, 0o666},
-	{"/dev/random", 1, 8, 0o666},
-	{"/dev/console", 5, 1, 0o620},
-}
-
 // ListInitFiles list the files that are installed during the InitDB phase.
 func (a *APK) ListInitFiles() []tar.Header {
 	headers := make([]tar.Header, 0, 20)
@@ -238,15 +226,6 @@ func (a *APK) ListInitFiles() []tar.Header {
 			Name:     e.path,
 			Mode:     int64(e.perms),
 			Typeflag: tar.TypeReg,
-			Uid:      0,
-			Gid:      0,
-		})
-	}
-	for _, e := range initDeviceFiles {
-		headers = append(headers, tar.Header{
-			Name:     e.path,
-			Typeflag: tar.TypeChar,
-			Mode:     int64(e.perms),
 			Uid:      0,
 			Gid:      0,
 		})
@@ -318,13 +297,6 @@ func (a *APK) InitDB(ctx context.Context, buildRepos ...string) error {
 	for _, e := range append(initFiles, additionalFiles...) {
 		if err := a.fs.WriteFile(e.path, e.contents, e.perms); err != nil {
 			return fmt.Errorf("failed to create file %s: %w", e.path, err)
-		}
-	}
-	for _, e := range initDeviceFiles {
-		perms := uint32(e.perms.Perm())
-		err := a.fs.Mknod(e.path, unix.S_IFCHR|perms, int(unix.Mkdev(e.major, e.minor)))
-		if !a.ignoreMknodErrors && err != nil {
-			return fmt.Errorf("failed to create char device %s: %w", e.path, err)
 		}
 	}
 
